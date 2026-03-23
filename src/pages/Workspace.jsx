@@ -77,7 +77,7 @@ export default function Workspace({ids}){
 
         let option = {};
 
-        const {method, url, bearerToken, headers: requestHeaders} =  request;
+        const {method, url, bearerToken, headers: requestHeaders, body} =  request;
 
         if(method == null){
             return
@@ -87,6 +87,7 @@ export default function Workspace({ids}){
             option['Authorization'] = bearerToken;
         }
 
+     
         if(requestHeaders != null && requestHeaders.length >= 1){
             requestHeaders.forEach(header => {
                 
@@ -94,14 +95,11 @@ export default function Workspace({ids}){
                     return;
                 }
 
-                console.log(header);
-
                 option[header.key] = header.value
             })
         }
         
-        
-        const options = {headers: option};
+        const options = {headers: option };
 
         startFetching();
 
@@ -134,7 +132,7 @@ export default function Workspace({ids}){
                 })
             break;
             case 'post':
-                 axios.post(url, options).then(res => {
+                 axios.post(url, body, options).then(res => {
                     setFetchResult(res)
               }).catch(err => {
                     setFetchResult(err.message, true)
@@ -438,6 +436,9 @@ export default function Workspace({ids}){
         )}
 
         {fetchDetails?.isFetching && (<span>Loading</span>)}
+
+            <Editor  height={"80vh"} defaultLanguage="json" defaultValue={JSON.stringify( request?.body, null, 2)} onChange={(value)=> dispatch(updateFileDetails({ids, body: JSON.parse(value)}))}  />
+
 
         {!fetchDetails?.isFetching && (
             <Editor options={{readOnly: true}} height={"80vh"} defaultLanguage="json" value={ JSON.stringify( fetchDetails?.result, null, 2)}  />
