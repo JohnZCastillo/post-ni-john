@@ -4,6 +4,7 @@ import RequestItem from './Request';
 import { addRootFolder } from '../redux-slice/slice';
 import { PlusCircle } from '@boxicons/react';
 import Workspace from './Workspace';
+import Tab from './Tab';
 
 export default function Homepage(){
 
@@ -27,9 +28,9 @@ export default function Homepage(){
     }
 
     return <>
-    <main className='flex'>
-        <aside className='h-screen overflow-y-auto  border'> 
-            <table className="w-[300px]">
+    <main className='grid grid-cols-[auto_1fr]'>
+        <aside className='h-screen border w-full'> 
+            <table className="w-full">
                 <tbody>
                     <tr>
                         <td>
@@ -46,8 +47,15 @@ export default function Homepage(){
                 </tbody>
             </table>
         </aside>
-        <section className='grow'>
-            <Workspace ids={appState?.activeSelection?.ids}/>
+        <section className='p-1'>
+            <div className='flex items-center gap-4 mb-2 overflow-hidden px-2 py-2'>
+                {appState?.selections?.map(selection => (
+                    <Tab ids={selection.ids}/>
+                ))}
+            </div>
+            {appState?.activeSelection?.ids && (
+                <Workspace ids={appState?.activeSelection?.ids}/>
+            )}
         </section>
     </main>
     </>

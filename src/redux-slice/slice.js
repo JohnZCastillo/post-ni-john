@@ -67,7 +67,16 @@ export const counterSlice = createSlice({
 
         state.activeSelection = target;
 
-        // console.log(current(state.activeSelection));
+        if(state?.selections == null){
+            state.selections = [target];
+        }else{
+
+            const isExisting = state.selections.find(selection => selection.id == target.id );
+
+            if(!isExisting){
+                state.selections.push(target);
+            }
+        }
 
     },
     updateMethod: (state, action) => {
@@ -207,9 +216,20 @@ export const counterSlice = createSlice({
         })
 
     },
+    removeSelection: (state, action) => {
+
+        const {id} = action.payload;
+
+        if(state?.selections == null){
+            return;
+        }
+
+        state.selections = state.selections.filter(selection => selection.id != id);
+
+    },
   },
 })
 
-export const { updateFilename, setSelection, updateMethod, updateUrl, addFolder, addRootFolder, updateFileDetails} = counterSlice.actions
+export const { updateFilename, setSelection, updateMethod, updateUrl, addFolder, addRootFolder, updateFileDetails, removeSelection} = counterSlice.actions
 
 export default counterSlice.reducer

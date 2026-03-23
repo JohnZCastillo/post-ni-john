@@ -6,14 +6,25 @@ import { v4 } from 'uuid';
 import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import Editor from '@monaco-editor/react';
+import useKeyValue from "../hooks/useKeyValue";
 
 export default function Workspace({ids}){
 
-    
     const trafficController = useRef();
     const dispatch = useDispatch();
 
     const request = useFilename(ids);
+
+    const {
+        contents: headers, 
+        getContent: getHeader, 
+        deleteContent: deleteHeader, 
+        updateContent: udpateHeader,
+        setContents: setHeaders
+    } = useKeyValue({
+        initialContents: [{id: '', key: '', value: ''}],
+        addOnEmpty: true
+    });
 
     const [toolBar, setToolBar] = useState({
         activateTool: null,
@@ -49,6 +60,10 @@ export default function Workspace({ids}){
         trafficController.current = 'initial'
     },[])
 
+    useEffect(()=>{
+        dispatch(updateFileDetails({ids, headers}))
+    },[headers])
+
     const handleOnChangeMethod = (e)=>{
         dispatch(updateFileDetails({method: e.target.value, ids}))
     }
@@ -60,11 +75,33 @@ export default function Workspace({ids}){
 
     const fetch = ()=> {
 
-        const {method, url, options} =  request;
+        let option = {};
+
+        const {method, url, bearerToken, headers: requestHeaders} =  request;
 
         if(method == null){
             return
         }
+
+        if(bearerToken != null){
+            option['Authorization'] = bearerToken;
+        }
+
+        if(requestHeaders != null && requestHeaders.length >= 1){
+            requestHeaders.forEach(header => {
+                
+                if(header?.key?.length <= 0){
+                    return;
+                }
+
+                console.log(header);
+
+                option[header.key] = header.value
+            })
+        }
+        
+        
+        const options = {headers: option};
 
         startFetching();
 
@@ -169,11 +206,7 @@ export default function Workspace({ids}){
     }
 
     const handleOnChangeToken = (e) => {
-        dispatch(updateFileDetails({auth: e.target.value, ids, options: {
-            headers: {
-                'Authorization': `Bearer ${e.target.value}`
-            } 
-        }}))
+        dispatch(updateFileDetails({ ids,  bearerToken: `Bearer ${e.target.value}`}))
     }
 
     useEffect(()=>{
@@ -193,8 +226,10 @@ export default function Workspace({ids}){
             result: null,
             isError: null
         })
-    },[ids])
 
+        setHeaders(request?.headers ?? [{id: '', key: '', value: ''}]);
+
+    },[ids])
     
     useEffect(()=>{
 
@@ -354,11 +389,51 @@ export default function Workspace({ids}){
             </table>
         )}
 
+         {toolBar.activateTool == 'Headers' && (
+            <table className='w-full border'>
+                <thead>
+                    <tr>
+                        <th>Key</th>
+                        <th>Value</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {headers.map((input, index) => {
+                        return <>
+                            <tr key={input.id} className='border'> 
+                            <td className='border'>
+                                <input
+                                    value={getHeader(input.id)?.key} 
+                                    onChange={(e)=> udpateHeader({id: input.id, key: e.target.value, index: index  })} 
+                                    className='w-full outline-none text-sm p-1'
+                                />
+                            </td>
+                            <td className='border'>
+                                <input
+                                    value={getHeader(input.id)?.value} 
+                                    onChange={(e)=> udpateHeader({id: input.id, value: e.target.value, index: index})} 
+                                    className='w-full outline-none text-sm p-1'
+                                />
+                            </td>
+                            <td className='border'>
+                                <Trash 
+                                    onClick={()=> deleteHeader(input.id)} 
+                                    className='text-red-500 cursor-pointer' 
+                                    type='button'
+                                />
+                            </td>
+                        </tr>
+                        </>
+                    })}
+                </tbody>
+            </table>
+        )}
 
         {toolBar.activateTool == 'Authorization' && (
             <div className="grid grid-cols-[120px_1fr] items-center">
                 <input readOnly value="Bearer Token" className="p-1 border w-full outline-none"/>
-                <input onChange={handleOnChangeToken} value={request?.auth} className="p-1 border-t border-b border-e w-full outline-none"/>
+                <input onChange={handleOnChangeToken} value={request?.bearerToken} className="p-1 border-t border-b border-e w-full outline-none"/>
             </div>
         )}
 
