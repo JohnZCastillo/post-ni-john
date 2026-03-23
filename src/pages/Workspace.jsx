@@ -3,21 +3,28 @@ import { updateFileDetails, updateMethod } from "../redux-slice/slice";
 import useFilename from "../hooks/useFilename";
 import { Trash } from '@boxicons/react';
 import { v4 } from 'uuid';
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import Editor from '@monaco-editor/react';
 
 export default function Workspace({ids}){
 
-    const request = useFilename(ids);
+    
     const trafficController = useRef();
     const dispatch = useDispatch();
 
-    // console.log('current request: ', request, ' ids: ', ids);
+    const request = useFilename(ids);
 
-    useEffect(()=>{
-        console.log('rerender')
-    },[])
+    const [toolBar, setToolBar] = useState({
+        activateTool: null,
+        tools: [
+                'Params',
+                'Authorization',
+                'Headers',
+                'Body'
+            ]
+    });
+  
     const [fetchDetails , setFetchDetails] = useState({
         isFetching: false,
         result: null,
@@ -36,11 +43,7 @@ export default function Workspace({ids}){
         setFetchDetails(prev => ({...prev, isFetching: false}))
     }
 
-    const [params, setParams] = useState([{
-        id: v4(),
-        key: '',
-        value: '',
-    }])
+    const [params, setParams] = useState([])
 
     useEffect(()=>{
         trafficController.current = 'initial'
@@ -164,6 +167,34 @@ export default function Workspace({ids}){
             ]))
         }
     }
+
+    const handleOnChangeToken = (e) => {
+        dispatch(updateFileDetails({auth: e.target.value, ids, options: {
+            headers: {
+                'Authorization': `Bearer ${e.target.value}`
+            } 
+        }}))
+    }
+
+    useEffect(()=>{
+
+         trafficController.current = 'initial';
+         
+        setParams([
+            {
+                id: v4(),
+                key: '',
+                value: '',
+            }
+        ]);
+
+        setFetchDetails({
+            isFetching: false,
+            result: null,
+            isError: null
+        })
+    },[ids])
+
     
     useEffect(()=>{
 
@@ -272,49 +303,69 @@ export default function Workspace({ids}){
             <button onClick={fetch} className='px-3 py-2 bg-indigo-500 text-white rounded cursor-pointer'>Send</button>
         </div>
 
-        <table className='w-full border'>
-            <thead>
-                <tr>
-                    <th>Key</th>
-                    <th>Value</th>
-                    <th>Value</th>
-                </tr>
-            </thead>
-            <tbody>
-                {params.map((input, index) => {
-                    return <>
-                        <tr key={input.id} className='border'> 
-                        <td className='border'>
-                            <input
-                                value={getParam(input.id)?.key} 
-                                onChange={(e)=> updateParams({id: input.id, key: e.target.value, index: index    })} 
-                                className='w-full outline-none text-sm p-1'
-                            />
-                        </td>
-                        <td className='border'>
-                            <input
-                                value={getParam(input.id)?.value} 
-                                onChange={(e)=> updateParams({id: input.id, value: e.target.value, index: index})} 
-                                className='w-full outline-none text-sm p-1'
-                            />
-                        </td>
-                        <td className='border'>
-                            <Trash 
-                                onClick={()=> deleteParam(input.id)} 
-                                className='text-red-500 cursor-pointer' 
-                                type='button'
-                            />
-                        </td>
+        <section className="flex gap-2 p-1">
+            {toolBar?.tools.map(tool => (
+              <button 
+                className={`px-2 py-1 rounded cursor-pointer ${toolBar.activateTool == tool ? 'bg-gray-300' : ''}`}
+                onClick={()=> setToolBar(prev => ({...prev, activateTool: tool}))}>
+                {tool}
+              </button>
+            ))}
+        </section>
+
+        {toolBar.activateTool == 'Params' && (
+            <table className='w-full border'>
+                <thead>
+                    <tr>
+                        <th>Key</th>
+                        <th>Value</th>
+                        <th>Value</th>
                     </tr>
-                    </>
-                })}
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    {params.map((input, index) => {
+                        return <>
+                            <tr key={input.id} className='border'> 
+                            <td className='border'>
+                                <input
+                                    value={getParam(input.id)?.key} 
+                                    onChange={(e)=> updateParams({id: input.id, key: e.target.value, index: index    })} 
+                                    className='w-full outline-none text-sm p-1'
+                                />
+                            </td>
+                            <td className='border'>
+                                <input
+                                    value={getParam(input.id)?.value} 
+                                    onChange={(e)=> updateParams({id: input.id, value: e.target.value, index: index})} 
+                                    className='w-full outline-none text-sm p-1'
+                                />
+                            </td>
+                            <td className='border'>
+                                <Trash 
+                                    onClick={()=> deleteParam(input.id)} 
+                                    className='text-red-500 cursor-pointer' 
+                                    type='button'
+                                />
+                            </td>
+                        </tr>
+                        </>
+                    })}
+                </tbody>
+            </table>
+        )}
+
+
+        {toolBar.activateTool == 'Authorization' && (
+            <div className="grid grid-cols-[120px_1fr] items-center">
+                <input readOnly value="Bearer Token" className="p-1 border w-full outline-none"/>
+                <input onChange={handleOnChangeToken} value={request?.auth} className="p-1 border-t border-b border-e w-full outline-none"/>
+            </div>
+        )}
 
         {fetchDetails?.isFetching && (<span>Loading</span>)}
 
         {!fetchDetails?.isFetching && (
-            <Editor options={{readOnly: true}} height={"80vh"} defaultLanguage="json" defaultValue={ JSON.stringify( fetchDetails?.result, null, 2)}  />
+            <Editor options={{readOnly: true}} height={"80vh"} defaultLanguage="json" value={ JSON.stringify( fetchDetails?.result, null, 2)}  />
         )}
     </>
 }
