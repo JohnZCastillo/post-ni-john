@@ -7,6 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import Editor from '@monaco-editor/react';
 import useKeyValue from "../hooks/useKeyValue";
+import { Allotment } from "allotment";
 
 export default function Workspace({ids}){
 
@@ -312,136 +313,153 @@ export default function Workspace({ids}){
     }, [params])
 
     return <>
-        <div className='grid grid-cols-[1fr_auto] gap-1'>
-            <div className='flex items-center p-1 gap-2 border rounded'>
-                <span className='border-r border-gray-300 pe-2'>
-                    <select 
-                        onChange={handleOnChangeMethod} 
-                        value={request?.method} 
-                        className='outline-none'
-                    >
-                        <option value="get">Get</option>
-                        <option value="post">Post</option>
-                        <option value="delete">Delete</option>
-                        <option value="patch">Patch</option>
-                        <option value="put">Put</option>
-                    </select>
-                </span>
-                <input  
-                    onChange={handleOnChangeUrl} 
-                    value={request?.url} 
-                    className='w-full outline-none'
-                />
-            </div>
-            <button onClick={fetch} className='px-3 py-2 bg-indigo-500 text-white rounded cursor-pointer'>Send</button>
-        </div>
+    <div className="h-screen">
+        <Allotment vertical={true}>
+            <section className="w-full">
 
-        <section className="flex gap-2 p-1">
-            {toolBar?.tools.map(tool => (
-              <button 
-                className={`px-2 py-1 rounded cursor-pointer ${toolBar.activateTool == tool ? 'bg-gray-300' : ''}`}
-                onClick={()=> setToolBar(prev => ({...prev, activateTool: tool}))}>
-                {tool}
-              </button>
-            ))}
-        </section>
+                <div className='grid grid-cols-[1fr_auto] gap-1'>
+                    <div className='flex items-center p-1 gap-2 border rounded'>
+                        <span className='border-r border-gray-300 pe-2'>
+                            <select 
+                                onChange={handleOnChangeMethod} 
+                                value={request?.method} 
+                                className='outline-none'
+                            >
+                                <option value="get">Get</option>
+                                <option value="post">Post</option>
+                                <option value="delete">Delete</option>
+                                <option value="patch">Patch</option>
+                                <option value="put">Put</option>
+                            </select>
+                        </span>
+                        <input  
+                            onChange={handleOnChangeUrl} 
+                            value={request?.url} 
+                            className='w-full outline-none'
+                        />
+                    </div>
+                    <button onClick={fetch} className='px-3 py-2 bg-indigo-500 text-white rounded cursor-pointer'>Send</button>
+                </div>
 
-        {toolBar.activateTool == 'Params' && (
-            <table className='w-full border'>
-                <thead>
-                    <tr>
-                        <th>Key</th>
-                        <th>Value</th>
-                        <th>Value</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {params.map((input, index) => {
-                        return <>
-                            <tr key={input.id} className='border'> 
-                            <td className='border'>
-                                <input
-                                    value={getParam(input.id)?.key} 
-                                    onChange={(e)=> updateParams({id: input.id, key: e.target.value, index: index    })} 
-                                    className='w-full outline-none text-sm p-1'
-                                />
-                            </td>
-                            <td className='border'>
-                                <input
-                                    value={getParam(input.id)?.value} 
-                                    onChange={(e)=> updateParams({id: input.id, value: e.target.value, index: index})} 
-                                    className='w-full outline-none text-sm p-1'
-                                />
-                            </td>
-                            <td className='border'>
-                                <Trash 
-                                    onClick={()=> deleteParam(input.id)} 
-                                    className='text-red-500 cursor-pointer' 
-                                    type='button'
-                                />
-                            </td>
-                        </tr>
-                        </>
-                    })}
-                </tbody>
-            </table>
-        )}
+                <section className="flex gap-2 p-1">
+                    {toolBar?.tools.map(tool => (
+                    <button 
+                        className={`px-2 py-1 rounded cursor-pointer ${toolBar.activateTool == tool ? 'bg-gray-300' : ''}`}
+                        onClick={()=> setToolBar(prev => ({...prev, activateTool: tool}))}>
+                        {tool}
+                    </button>
+                    ))}
+                </section>
 
-         {toolBar.activateTool == 'Headers' && (
-            <table className='w-full border'>
-                <thead>
-                    <tr>
-                        <th>Key</th>
-                        <th>Value</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {headers.map((input, index) => {
-                        return <>
-                            <tr key={input.id} className='border'> 
-                            <td className='border'>
-                                <input
-                                    value={getHeader(input.id)?.key} 
-                                    onChange={(e)=> udpateHeader({id: input.id, key: e.target.value, index: index  })} 
-                                    className='w-full outline-none text-sm p-1'
-                                />
-                            </td>
-                            <td className='border'>
-                                <input
-                                    value={getHeader(input.id)?.value} 
-                                    onChange={(e)=> udpateHeader({id: input.id, value: e.target.value, index: index})} 
-                                    className='w-full outline-none text-sm p-1'
-                                />
-                            </td>
-                            <td className='border'>
-                                <Trash 
-                                    onClick={()=> deleteHeader(input.id)} 
-                                    className='text-red-500 cursor-pointer' 
-                                    type='button'
-                                />
-                            </td>
-                        </tr>
-                        </>
-                    })}
-                </tbody>
-            </table>
-        )}
+                {toolBar.activateTool == 'Params' && (
+                    <table className='w-full border'>
+                        <thead>
+                            <tr>
+                                <th>Key</th>
+                                <th>Value</th>
+                                <th>Value</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {params.map((input, index) => {
+                                return <>
+                                    <tr key={input.id} className='border'> 
+                                    <td className='border'>
+                                        <input
+                                            value={getParam(input.id)?.key} 
+                                            onChange={(e)=> updateParams({id: input.id, key: e.target.value, index: index    })} 
+                                            className='w-full outline-none text-sm p-1'
+                                        />
+                                    </td>
+                                    <td className='border'>
+                                        <input
+                                            value={getParam(input.id)?.value} 
+                                            onChange={(e)=> updateParams({id: input.id, value: e.target.value, index: index})} 
+                                            className='w-full outline-none text-sm p-1'
+                                        />
+                                    </td>
+                                    <td className='border'>
+                                        <Trash 
+                                            onClick={()=> deleteParam(input.id)} 
+                                            className='text-red-500 cursor-pointer' 
+                                            type='button'
+                                        />
+                                    </td>
+                                </tr>
+                                </>
+                            })}
+                        </tbody>
+                    </table>
+                )}
 
-        {toolBar.activateTool == 'Authorization' && (
-            <div className="grid grid-cols-[120px_1fr] items-center">
-                <input readOnly value="Bearer Token" className="p-1 border w-full outline-none"/>
-                <input onChange={handleOnChangeToken} value={request?.bearerToken} className="p-1 border-t border-b border-e w-full outline-none"/>
-            </div>
-        )}
+                {toolBar.activateTool == 'Headers' && (
+                    <table className='w-full border'>
+                        <thead>
+                            <tr>
+                                <th>Key</th>
+                                <th>Value</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {headers.map((input, index) => {
+                                return <>
+                                    <tr key={input.id} className='border'> 
+                                    <td className='border'>
+                                        <input
+                                            value={getHeader(input.id)?.key} 
+                                            onChange={(e)=> udpateHeader({id: input.id, key: e.target.value, index: index  })} 
+                                            className='w-full outline-none text-sm p-1'
+                                        />
+                                    </td>
+                                    <td className='border'>
+                                        <input
+                                            value={getHeader(input.id)?.value} 
+                                            onChange={(e)=> udpateHeader({id: input.id, value: e.target.value, index: index})} 
+                                            className='w-full outline-none text-sm p-1'
+                                        />
+                                    </td>
+                                    <td className='border'>
+                                        <Trash 
+                                            onClick={()=> deleteHeader(input.id)} 
+                                            className='text-red-500 cursor-pointer' 
+                                            type='button'
+                                        />
+                                    </td>
+                                </tr>
+                                </>
+                            })}
+                        </tbody>
+                    </table>
+                )}
 
-        {fetchDetails?.isFetching && (<span>Loading</span>)}
+                {toolBar.activateTool == 'Authorization' && (
+                    <div className="grid grid-cols-[120px_1fr] items-center">
+                        <input readOnly value="Bearer Token" className="p-1 border w-full outline-none"/>
+                        <input onChange={handleOnChangeToken} value={request?.bearerToken} className="p-1 border-t border-b border-e w-full outline-none"/>
+                    </div>
+                )}
 
-            <Editor  height={"80vh"} defaultLanguage="json" defaultValue={JSON.stringify( request?.body, null, 2)} onChange={(value)=> dispatch(updateFileDetails({ids, body: JSON.parse(value)}))}  />
+                {toolBar.activateTool == 'Body' && (
+                    <Editor  height={"40vh"} defaultLanguage="json" defaultValue={JSON.stringify( request?.body, null, 2)} onChange={(value)=> dispatch(updateFileDetails({ids, body: JSON.parse(value)}))}  />
+                )}
+
+            </section>
+            <Allotment.Pane minSize={200} maxSize={600}>
+                <section className="w-full pt-3 px-2 ">
+
+                    <p className="text-gray-500 fw-bold mb-5">Response</p>
+                    
+                    {fetchDetails?.isFetching && (<span>Loading</span>)}
 
 
-        {!fetchDetails?.isFetching && (
-            <Editor options={{readOnly: true}} height={"80vh"} defaultLanguage="json" value={ JSON.stringify( fetchDetails?.result, null, 2)}  />
-        )}
+                    {!fetchDetails?.isFetching  && (
+                        <Editor options={{readOnly: true}} height={"500px"} defaultLanguage="json" value={ JSON.stringify( fetchDetails?.result, null, 2)}  /> 
+                    )} 
+
+                </section>
+            </Allotment.Pane>
+        </Allotment>
+    </div>
     </>
 }
