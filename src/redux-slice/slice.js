@@ -216,6 +216,39 @@ export const counterSlice = createSlice({
         })
 
     },
+    deleteFile: (state, action) => {
+
+        const { ids } = action.payload;
+
+        let target = state.content;
+
+        
+        for (let index = 0; index < ids.length; index++) {
+            const key = ids[index];
+
+            target = target.find(x => x.id == key);
+
+            if(target == null){
+                return;
+            }
+
+            if(index == 0 && ids.length == 1){
+                counterSlice.caseReducers.removeSelection(state, { type: 'counter/removeSelection', payload: {id: key} });
+                state.content = state.content?.filter(content => content?.id != key) ?? [];
+                return;
+            }
+
+            if(index == (ids.length - 2)){
+                counterSlice.caseReducers.removeSelection(state, { type: 'counter/removeSelection', payload: { id:  ids[ids.length - 1] } });
+                target.contents = target?.contents?.filter(contents => contents.id != ids[ids.length - 1]) ?? [];
+                return;
+            }
+
+            if(index != (ids.length - 1)){
+                target = target.contents
+            }
+        }
+    },
     removeSelection: (state, action) => {
 
         const {id} = action.payload;
@@ -225,11 +258,10 @@ export const counterSlice = createSlice({
         }
 
         state.selections = state.selections.filter(selection => selection.id != id);
-
-    },
+    }   
   },
 })
 
-export const { updateFilename, setSelection, updateMethod, updateUrl, addFolder, addRootFolder, updateFileDetails, removeSelection} = counterSlice.actions
+export const { updateFilename, setSelection, updateMethod, updateUrl, addFolder, addRootFolder, updateFileDetails, removeSelection, deleteFile} = counterSlice.actions
 
 export default counterSlice.reducer

@@ -2,7 +2,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import TestFolder from './Folder';
 import RequestItem from './Request';
 import { addRootFolder } from '../redux-slice/slice';
-import { PlusCircle } from '@boxicons/react';
+import { PlusCircle, Plus} from '@boxicons/react';
 import Workspace from './Workspace';
 import Tab from './Tab';
 import { Allotment } from 'allotment';
@@ -32,18 +32,21 @@ export default function Homepage(){
     <div className='h-[100vh]'>
         <Allotment>
             <Allotment.Pane minSize={200} maxSize={400}>
-            <aside className='h-screen border'> 
+            <aside className='h-screen'> 
                 <table className="w-full">
                     <tbody>
                         <tr>
                             <td>
                                 <div className=''>
-                                    <div className='bg-gray-500 p-2 flex items-center gap-1'>
-                                        <PlusCircle onClick={()=> dispatch(addRootFolder({filename: 'Folder'}))} type='button' />
+                                    <div className='p-2 flex items-center gap-1 border-gray-300 border-b'>
+                                        <Plus className='ms-auto' size='xs' onClick={()=> dispatch(addRootFolder({filename: 'Folder'}))} type='button' />
                                     </div>
-                                    {appState.content.map(content => {
-                                        return renderer(content)
-                                    })}
+
+                                    <div className='px-1'>
+                                        {appState.content.map(content => {
+                                            return renderer(content)
+                                        })}
+                                    </div>
                                 </div>
                             </td>
                         </tr>
@@ -57,7 +60,7 @@ export default function Homepage(){
                     <>
                         <div className='flex items-center gap-4 mb-2 overflow-hidden px-2 py-2'>
                             {appState?.selections?.map(selection => (
-                                <Tab ids={selection.ids}/>
+                                <Tab ids={selection?.ids}/>
                             ))}
                         </div>
                         {appState?.activeSelection?.ids && (

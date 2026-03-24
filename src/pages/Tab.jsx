@@ -21,7 +21,7 @@ export default function Tab({ids}){
     const handleOnDelete = (e) => {
         e.stopPropagation();
 
-        dispatch(removeSelection({id: workSpace.id}));
+        dispatch(removeSelection({id: workSpace?.id}));
     }
 
     return <>
@@ -29,7 +29,7 @@ export default function Tab({ids}){
             onMouseEnter={()=> setIsDeleteShowing(true)}
             onMouseLeave={()=> setIsDeleteShowing(false)}
             onClick={handleOnClick} 
-            className={`${activeSelection.id == workSpace.id ? 'bg-gray-500 text-white' : 'bg-gray-300' } relative px-2 py-1 rounded cursor-pointer`}>
+            className={`${activeSelection?.id == workSpace?.id ? 'bg-gray-500 text-white' : 'bg-gray-300' } relative px-2 py-1 rounded cursor-pointer`}>
                 
                 <span className="max-w-[10ch] truncate">
                     {workSpace?.name ?? workSpace?.url}

@@ -44,7 +44,7 @@ const RequestItem = ({type, ids})=> {
     },[requestDetails.type])
 
     return <div>
-        <Item filename={file?.name} handleOnChangeFilename={handleOnChangeFileName} TextIcon={TextIcon}/>
+        <Item ids={ids} onClick={handleOnClick} filename={file?.name} handleOnChangeFilename={handleOnChangeFileName} TextIcon={TextIcon}/>
     </div>
 }
 
