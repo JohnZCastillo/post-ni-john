@@ -4,19 +4,8 @@ import { Folder, FolderOpen, LinkAlt } from '@boxicons/react';
 import { addFolder, updateFileDetails, updateFilename } from "../redux-slice/slice";
 import useFilename from "../hooks/useFilename";
 import { Plus, PlusCircle } from '@boxicons/react';
-
-const Item =  ({onClick, Icon, TextIcon, filename, handleOnChangeFilename}) => {
-
-    return <div  className='flex items-center gap-1'>
-        {TextIcon == null && (
-            <Icon type='button' onClick={onClick} size='base' className="cursor-pointer" />
-        )}
-
-        {TextIcon && (TextIcon)}
-        
-        <input className='p-1 outline-none' value={filename} onChange={handleOnChangeFilename} />
-    </div>
-}
+import Item from './Item';
+import { isAction } from "@reduxjs/toolkit";
 
 const ItemWrapper = ({children, ids}) => {
 
@@ -78,11 +67,7 @@ const ItemWrapper = ({children, ids}) => {
     },[isContentShowing])
 
     return <div>
-        <div className="flex items-center justify-between">
-            <Item filename={file?.name} handleOnChangeFilename={handleOnChangeFileName} Icon={Icon} onClick={handleOnClick}/>
-            <PlusCircle type="button" onClick={handleOnAddFolder} className="text-gray-500 cursor-pointer" size="sm" />
-        </div>
-
+        <Item  otherActions={[{title: 'Add Folder', action: ()=> handleOnAddFolder()}]} ids={ids} filename={file?.name} handleOnChangeFilename={handleOnChangeFileName} Icon={Icon} onClick={handleOnClick}/>
         {isContentShowing && (<div className='ps-4'>{children}</div>)} 
     </div>
 }

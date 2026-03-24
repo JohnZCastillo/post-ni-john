@@ -5,7 +5,7 @@ import { useDispatch } from "react-redux";
 import { deleteFile } from "../redux-slice/slice";
 
 
-const Item =  ({onClick, Icon, TextIcon, filename, handleOnChangeFilename, ids = []}) => {
+const Item =  ({onClick, Icon, TextIcon, filename, handleOnChangeFilename, ids = [], otherActions = []}) => {
 
     const inputRef = useRef();
     const [isEditable, setEditable] = useState(false);
@@ -13,7 +13,7 @@ const Item =  ({onClick, Icon, TextIcon, filename, handleOnChangeFilename, ids =
 
     const dispatch = useDispatch();
 
-    const options = [
+    const [options, setOptions] = useState( [
         {
             title: 'Rename',
             action: function () {
@@ -26,7 +26,7 @@ const Item =  ({onClick, Icon, TextIcon, filename, handleOnChangeFilename, ids =
                 dispatch(deleteFile({ids: ids}))
             },
         },
-    ];
+    ]);
 
     const handleOnClick = (e)=>{
         if(isEditable){
@@ -42,9 +42,19 @@ const Item =  ({onClick, Icon, TextIcon, filename, handleOnChangeFilename, ids =
         }
     },[isEditable])
 
+    useEffect(()=>{
+
+        if(otherActions.length <= 0 ){
+            return
+        }
+
+        setOptions(prev => ([...prev, ...otherActions]))
+            
+    },[])
+
     return <div     
          ref={contextmenu}
-        className='bg-gray-500 flex items-center gap-1 hover:bg-gray-100 px-1 cursor-pointer'
+        className='flex items-center gap-1 hover:bg-gray-100 px-1 cursor-pointer'
         >
 
         <ContextMenu options={options} ref={contextmenu}/>
