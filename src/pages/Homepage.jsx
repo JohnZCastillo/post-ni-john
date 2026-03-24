@@ -1,8 +1,8 @@
 import { useDispatch, useSelector } from 'react-redux';
 import TestFolder from './Folder';
 import RequestItem from './Request';
-import { addRootFolder } from '../redux-slice/slice';
-import { PlusCircle, Plus} from '@boxicons/react';
+import { addRootFile, addRootFolder } from '../redux-slice/slice';
+import { PlusCircle, Plus, Folder} from '@boxicons/react';
 import Workspace from './Workspace';
 import Tab from './Tab';
 import { Allotment } from 'allotment';
@@ -16,14 +16,14 @@ export default function Homepage(){
     const renderer = (item, parentIds = []) => {
 
         if(item.type == 'file'){
-            return <RequestItem type={item?.method} ids={[...parentIds, item.id]}/>
+            return <RequestItem  key={item?.id} type={item?.method} ids={[...parentIds, item.id]}/>
         } 
 
         if(item.contents?.length <= 0){
-            return <TestFolder  ids={[...parentIds, item.id]}/>
+            return <TestFolder  key={item?.id} ids={[...parentIds, item.id]}/>
         }
 
-        return <TestFolder ids={[...parentIds, item.id]}>
+        return <TestFolder  key={item?.id} ids={[...parentIds, item.id]}>
             {item.contents?.map(content => renderer(content, [...parentIds, item.id]))}
         </TestFolder>
     }
@@ -38,8 +38,9 @@ export default function Homepage(){
                         <tr>
                             <td>
                                 <div className=''>
-                                    <div className='p-2 flex items-center gap-1 border-gray-300 border-b'>
-                                        <Plus className='ms-auto' size='xs' onClick={()=> dispatch(addRootFolder({filename: 'Folder'}))} type='button' />
+                                    <div className='p-2 flex items-center justify-end gap-2 border-gray-300 border-b'>
+                                        <Plus size='xs' onClick={()=> dispatch(addRootFile({filename: 'Request'}))} type='button' />
+                                        <Folder  size='xs' onClick={()=> dispatch(addRootFolder({filename: 'Folder'}))} type='button' />
                                     </div>
 
                                     <div className='px-1'>

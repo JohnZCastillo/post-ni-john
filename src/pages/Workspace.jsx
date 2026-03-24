@@ -109,7 +109,16 @@ export default function Workspace({ids}){
                  axios.get(url, options).then(res => {
                     setFetchResult(res.data)
                 }).catch(err => {
-                    setFetchResult(err.message, true)
+
+                    if (err.response) {
+                        setFetchResult(err.response.data, true)
+                    } else if (err.request) {
+                        console.log(err.request);
+                    } else {
+                        console.log('Error', err.message);
+                    }
+
+                    // setFetchResult(err, true)
                 }).finally(()=>{
                     endFetch()
                 })

@@ -28,18 +28,6 @@ export const counterSlice = createSlice({
             }
         }
 
-        const isFile = filename.includes('.');
-        
-        if(isFile){
-            target.type = 'file';
-            target.method = 'get';
-            target.url = '';
-            target.contents = []
-            target.options = {}
-        }else{
-            target.type = 'folder'
-        }
-
         target.name = filename;
     },
     setSelection: (state, action) => {
@@ -105,8 +93,6 @@ export const counterSlice = createSlice({
             }
         }
         
-        // console.log('called: ', method);
-
         target.method = method;
         state.activeSelection = target
     },
@@ -173,6 +159,54 @@ export const counterSlice = createSlice({
             contents: []
         })
     },
+    addFile: (state, action) => {
+
+        const { filename, ids } = action.payload;
+
+        let target = state.content;
+
+        if(ids == null){
+            return;
+        }
+
+        for (let index = 0; index < ids.length; index++) {
+            const key = ids[index];
+
+            target = target.find(x => x.id == key);
+
+            if(target == null){
+                return;
+            }
+
+            if(index != (ids.length - 1)){
+                target = target.contents
+            }
+        }
+        
+        target.isOpen = true;
+
+        target?.contents?.push({
+            id: v4(),
+            method: 'get',
+            url: '',
+            type: 'file',
+            name: filename,
+            contents: []
+        })
+    },
+    addRootFile: (state, action) => {
+
+        const { filename } = action.payload;
+      
+        state?.content?.push({
+            id: v4(),
+            method: 'get',
+            url: '',
+            type: 'file',
+            name: filename,
+            contents: []
+        })
+    },
     addRootFolder: (state, action) => {
 
         const { filename } = action.payload;
@@ -204,13 +238,6 @@ export const counterSlice = createSlice({
             }
         }
 
-        if(name != null && name.includes('.')){
-            target.type = 'file';
-            target.method = 'get';
-            target.url = '';
-            target.contents = [];
-        }
-
         Object.keys(action.payload).forEach(key => {
             target[key] = action.payload[key];
         })
@@ -222,13 +249,15 @@ export const counterSlice = createSlice({
 
         let target = state.content;
 
-        
         for (let index = 0; index < ids.length; index++) {
             const key = ids[index];
 
             target = target.find(x => x.id == key);
 
             if(target == null){
+                console.log('ids: ', ids);
+                console.log('key: ', key);  
+                alert('unable to delete file')
                 return;
             }
 
@@ -262,6 +291,6 @@ export const counterSlice = createSlice({
   },
 })
 
-export const { updateFilename, setSelection, updateMethod, updateUrl, addFolder, addRootFolder, updateFileDetails, removeSelection, deleteFile} = counterSlice.actions
+export const { updateFilename, setSelection, updateMethod, updateUrl, addFolder, addRootFolder, updateFileDetails, removeSelection, deleteFile, addFile, addRootFile} = counterSlice.actions
 
 export default counterSlice.reducer

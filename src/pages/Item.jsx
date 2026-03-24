@@ -53,24 +53,36 @@ const Item =  ({onClick, Icon, TextIcon, filename, handleOnChangeFilename, ids =
     },[])
 
     return <div     
-         ref={contextmenu}
-        className='flex items-center gap-1 hover:bg-gray-100 px-1 cursor-pointer'
+        ref={contextmenu}
+        className='min-w-25 flex items-center gap-1 hover:bg-gray-100 px-1 cursor-pointer'
+        onClick={handleOnClick}
         >
 
         <ContextMenu options={options} ref={contextmenu}/>
 
          {TextIcon == null && (
-            <Icon type='button' onClick={onClick} size='base' className="cursor-pointer" />
+            <Icon size='base' className="cursor-pointer" />
         )}
 
         {TextIcon && (TextIcon)}
 
         {!isEditable && (
-            <p onClick={onClick} className="p-1">{filename}</p>
+            <p className="p-1">{filename}</p>
         )}    
 
         {isEditable && (
-            <input onBlur={()=> setEditable(false)} ref={inputRef} className='p-1 outline-none' value={filename} onChange={handleOnChangeFilename} />
+            <form className="block w-full" onSubmit={(e)=> {
+                e.preventDefault();
+                setEditable(false)
+            } }>
+                <input 
+                    onBlur={()=> setEditable(false)} 
+                    ref={inputRef} 
+                    className='w-full p-1 border-gray-300 border-b outline-none' 
+                    value={filename} 
+                    onChange={handleOnChangeFilename}
+                />
+            </form>
         )}     
 
      

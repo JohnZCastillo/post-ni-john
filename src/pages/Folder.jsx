@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import {  useDispatch, useSelector } from "react-redux";
 import { Folder, FolderOpen, LinkAlt } from '@boxicons/react';
-import { addFolder, updateFileDetails, updateFilename } from "../redux-slice/slice";
+import { addFile, addFolder, updateFileDetails, updateFilename } from "../redux-slice/slice";
 import useFilename from "../hooks/useFilename";
 import { Plus, PlusCircle } from '@boxicons/react';
 import Item from './Item';
 import { isAction } from "@reduxjs/toolkit";
+import { v4 } from "uuid";
 
 const ItemWrapper = ({children, ids}) => {
 
@@ -25,6 +26,10 @@ const ItemWrapper = ({children, ids}) => {
 
     const handleOnAddFolder = (e) =>{
         dispatch(addFolder({ids: ids, filename: 'file'}))
+    }
+
+    const handleOnAddFile = (e) =>{
+        dispatch(addFile({ids: ids, filename: 'file'}))
     }
 
     useEffect(()=>{
@@ -67,7 +72,16 @@ const ItemWrapper = ({children, ids}) => {
     },[isContentShowing])
 
     return <div>
-        <Item  otherActions={[{title: 'Add Folder', action: ()=> handleOnAddFolder()}]} ids={ids} filename={file?.name} handleOnChangeFilename={handleOnChangeFileName} Icon={Icon} onClick={handleOnClick}/>
+        <Item  
+            otherActions={[
+                {title: 'Add Folder', action: ()=> handleOnAddFolder()},
+                {title: 'Add File', action: ()=> handleOnAddFile()},
+            ]} 
+            ids={ids} filename={file?.name} 
+            handleOnChangeFilename={handleOnChangeFileName} 
+            Icon={Icon} 
+            onClick={handleOnClick}
+        />
         {isContentShowing && (<div className='ps-4'>{children}</div>)} 
     </div>
 }
