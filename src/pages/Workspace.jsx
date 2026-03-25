@@ -406,6 +406,7 @@ export default function Workspace({ids}){
                 <section className="flex gap-2 p-1">
                     {toolBar?.tools.map(tool => (
                     <button 
+                        type="button"
                         className={`px-2 py-1 rounded cursor-pointer ${toolBar.activateTool == tool ? 'bg-gray-300' : ''}`}
                         onClick={()=> setToolBar(prev => ({...prev, activateTool: tool}))}>
                         {tool}
