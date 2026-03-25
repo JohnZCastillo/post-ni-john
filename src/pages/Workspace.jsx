@@ -123,17 +123,23 @@ export default function Workspace({ids}){
         switch(method){
             case 'get':
                  axios.get(url, options).then(res => {
-                    setFetchResult(res.data)
+
+                    console.log(res);
+
+                    setFetchResult(res)
                 }).catch(err => {
 
+                    console.log(err.response);
+
                     if (err.response) {
-                        setFetchResult(err.response.data, true)
+                        setFetchResult(err.response, true)
                     } else if (err.request) {
                         setFetchResult(err.request, true)
-                        console.log(err.request);
                     } else {
-                        setFetchResult('Something went wrong', true)
+                        setFetchResult({"message": "Something went wrong"}, true)
                     }
+
+
                 }).finally(()=>{
                     endFetch()
                 })
@@ -511,13 +517,35 @@ export default function Workspace({ids}){
             <Allotment.Pane minSize={200} maxSize={600}>
                 <section className="w-full pt-3 px-2 ">
 
-                    <p className="text-gray-500 fw-bold mb-5">Response</p>
+                    <p className="text-gray-500 fw-bold mb-2">Response</p>
+
+                    <div className="flex items-center gap-2 mb-5 mx-5">
+                        <button className="text-sm cursor-pointer" type="button">json</button>
+                        <button className="text-sm cursor-pointer" type="button">preview</button>
+                        <button className="text-sm cursor-pointer" type="button">headers</button>
+                        <p className={`ms-auto text-sm font-semibold ${fetchDetails?.result?.status == 200 ? 'text-green-500' : 'text-red-500'}`}>
+                            {fetchDetails?.result?.status}
+                        </p> 
+
+                    </div>
                     
+
                     {fetchDetails?.isFetching && (<span>Loading</span>)}
 
+                    {!fetchDetails?.isFetching && !fetchDetails.isError  && (
+                        <Editor 
+                            options={{readOnly: true}} 
+                            height={"500px"} 
+                            defaultLanguage="json" 
+                            value={ JSON.stringify( fetchDetails?.result?.data, null, 2)}  /> 
+                    )} 
 
-                    {!fetchDetails?.isFetching  && (
-                        <Editor options={{readOnly: true}} height={"500px"} defaultLanguage="json" value={ JSON.stringify( fetchDetails?.result, null, 2)}  /> 
+                    {!fetchDetails?.isFetching && fetchDetails.isError  && (
+                        <Editor 
+                            options={{readOnly: true}} 
+                            height={"500px"} 
+                            defaultLanguage="json" 
+                            value={ JSON.stringify( fetchDetails.result, null, 2)}  /> 
                     )} 
 
                 </section>

@@ -3,10 +3,14 @@ import { v4 as uuidv4, v4 } from 'uuid';
 
 const initialState = JSON.parse(localStorage.getItem('redux-store'))?.appState ?? {content: [], activeSelection: null};
 
-
 export const counterSlice = createSlice({
   name: 'counter',
-  initialState: initialState,    
+  initialState: {
+        content: [],
+        activeSelection: null,
+        selections: [],
+        ...initialState
+    },    
   reducers: {
     updateFilename: (state, action) => {
 
@@ -287,10 +291,34 @@ export const counterSlice = createSlice({
         }
 
         state.selections = state.selections.filter(selection => selection.id != id);
+    },
+    updateContent: (state, action) => {
+
+        const {isUpstream = false} = action.payload;
+
+        state.content = action.payload.content;
+        
+        if(!isUpstream){
+            state.selected = null;
+            state.selections = []
+        }
     }   
   },
 })
 
-export const { updateFilename, setSelection, updateMethod, updateUrl, addFolder, addRootFolder, updateFileDetails, removeSelection, deleteFile, addFile, addRootFile} = counterSlice.actions
+export const { 
+        updateFilename, 
+        setSelection, 
+        updateMethod, 
+        updateUrl, 
+        addFolder, 
+        addRootFolder, 
+        updateFileDetails, 
+        removeSelection, 
+        deleteFile, 
+        addFile, 
+        addRootFile,
+        updateContent,
+    } = counterSlice.actions
 
 export default counterSlice.reducer
