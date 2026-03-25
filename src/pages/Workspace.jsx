@@ -78,7 +78,24 @@ export default function Workspace({ids}){
 
         let option = {};
 
-        const {method, url, bearerToken, headers: requestHeaders, body} =  request;
+        const {method, url: targetUrl, bearerToken, headers: requestHeaders, body} =  request;
+
+        let url = new URL('agent',import.meta.env.VITE_WEB_AGENT);
+
+        const loopBackUrl = new URL(targetUrl);
+
+        let isLoopBack = false;
+
+        isLoopBack = loopBackUrl.hostname === 'localhost' ||
+           loopBackUrl.hostname === '127.0.0.1' ||
+           loopBackUrl.hostname === '[::1]' ||
+           loopBackUrl.hostname === '::1';
+
+        if(isLoopBack){
+            url = loopBackUrl;
+        }else{
+            url.searchParams.append('targetUrl', targetUrl);
+        }
 
         if(method == null){
             return
@@ -88,7 +105,6 @@ export default function Workspace({ids}){
             option['Authorization'] = bearerToken;
         }
 
-     
         if(requestHeaders != null && requestHeaders.length >= 1){
             requestHeaders.forEach(header => {
                 
@@ -113,48 +129,79 @@ export default function Workspace({ids}){
                     if (err.response) {
                         setFetchResult(err.response.data, true)
                     } else if (err.request) {
+                        setFetchResult(err.request, true)
                         console.log(err.request);
                     } else {
-                        console.log('Error', err.message);
+                        setFetchResult('Something went wrong', true)
                     }
-
-                    // setFetchResult(err, true)
                 }).finally(()=>{
                     endFetch()
                 })
             break;
             case 'put':
                  axios.put(url, options).then(res => {
-                    setFetchResult(res)
-               }).catch(err => {
-                    setFetchResult(err.message, true)
+                    setFetchResult(res.data)
+                }).catch(err => {
+
+                    if (err.response) {
+                        setFetchResult(err.response.data, true)
+                    } else if (err.request) {
+                        setFetchResult(err.request, true)
+                        console.log(err.request);
+                    } else {
+                        setFetchResult('Something went wrong', true)
+                    }
                 }).finally(()=>{
                     endFetch()
                 })
             break;
             case 'patch':
                  axios.patch(url, options).then(res => {
-                    setFetchResult(res)
-               }).catch(err => {
-                    setFetchResult(err.message, true)
+                    setFetchResult(res.data)
+                }).catch(err => {
+
+                    if (err.response) {
+                        setFetchResult(err.response.data, true)
+                    } else if (err.request) {
+                        setFetchResult(err.request, true)
+                        console.log(err.request);
+                    } else {
+                        setFetchResult('Something went wrong', true)
+                    }
                 }).finally(()=>{
                     endFetch()
                 })
             break;
             case 'post':
                  axios.post(url, body, options).then(res => {
-                    setFetchResult(res)
-              }).catch(err => {
-                    setFetchResult(err.message, true)
+                    setFetchResult(res.data)
+                }).catch(err => {
+
+                    if (err.response) {
+                        setFetchResult(err.response.data, true)
+                    } else if (err.request) {
+                        setFetchResult(err.request, true)
+                        console.log(err.request);
+                    } else {
+                        setFetchResult('Something went wrong', true)
+                    }
                 }).finally(()=>{
                     endFetch()
                 })
             break;
             case 'delete':
                  axios.delete(url, options).then(res => {
-                    setFetchResult(res)
-               }).catch(err => {
-                    setFetchResult(err.message, true)
+                    setFetchResult(res.data)
+                }).catch(err => {
+
+                    if (err.response) {
+                        setFetchResult(err.response.data, true)
+                    } else if (err.request) {
+                        setFetchResult(err.request, true)
+                        console.log(err.request);
+                    } else {
+                        setFetchResult('Something went wrong', true)
+                    }
                 }).finally(()=>{
                     endFetch()
                 })
@@ -326,29 +373,35 @@ export default function Workspace({ids}){
         <Allotment vertical={true}>
             <section className="w-full">
 
-                <div className='grid grid-cols-[1fr_auto] gap-1'>
-                    <div className='flex items-center p-1 gap-2 border rounded'>
-                        <span className='border-r border-gray-300 pe-2'>
-                            <select 
-                                onChange={handleOnChangeMethod} 
-                                value={request?.method} 
-                                className='outline-none'
-                            >
-                                <option value="get">Get</option>
-                                <option value="post">Post</option>
-                                <option value="delete">Delete</option>
-                                <option value="patch">Patch</option>
-                                <option value="put">Put</option>
-                            </select>
-                        </span>
-                        <input  
-                            onChange={handleOnChangeUrl} 
-                            value={request?.url} 
-                            className='w-full outline-none'
-                        />
+                <form onSubmit={(e) => {
+                    e.preventDefault();
+
+                    fetch();
+                }}>
+                    <div className='grid grid-cols-[1fr_auto] gap-1'>
+                        <div className='flex items-center p-1 gap-2 border rounded'>
+                            <span className='border-r border-gray-300 pe-2'>
+                                <select 
+                                    onChange={handleOnChangeMethod} 
+                                    value={request?.method} 
+                                    className='outline-none'
+                                >
+                                    <option value="get">Get</option>
+                                    <option value="post">Post</option>
+                                    <option value="delete">Delete</option>
+                                    <option value="patch">Patch</option>
+                                    <option value="put">Put</option>
+                                </select>
+                            </span>
+                            <input  
+                                onChange={handleOnChangeUrl} 
+                                value={request?.url} 
+                                className='w-full outline-none'
+                            />
+                        </div>
+                        <button type="submit" className='px-3 py-2 bg-indigo-500 text-white rounded cursor-pointer'>Send</button>
                     </div>
-                    <button onClick={fetch} className='px-3 py-2 bg-indigo-500 text-white rounded cursor-pointer'>Send</button>
-                </div>
+                </form>
 
                 <section className="flex gap-2 p-1">
                     {toolBar?.tools.map(tool => (
