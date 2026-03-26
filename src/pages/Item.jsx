@@ -2,8 +2,8 @@ import { useEffect, useRef } from "react";
 import { useState } from "react";
 import ContextMenu from "../components/ContextMenu";
 import { useDispatch } from "react-redux";
-import { deleteFile } from "../redux-slice/slice";
-
+import { deleteFile, duplicateFile } from "../redux-slice/slice";
+import { useDebouncedCallback } from 'use-debounce';
 
 const Item =  ({onClick, Icon, TextIcon, filename, handleOnChangeFilename, ids = [], otherActions = []}) => {
 
@@ -12,6 +12,23 @@ const Item =  ({onClick, Icon, TextIcon, filename, handleOnChangeFilename, ids =
     const contextmenu = useRef();
 
     const dispatch = useDispatch();
+
+    const [text, setText] = useState(filename);
+
+    useEffect(()=>{
+        setText(filename)
+    },[filename])
+
+    const debounced = useDebouncedCallback(handleOnChangeFilename, 1000);
+
+    const handleChangeName = (e) => {
+        e.preventDefault();
+
+        const value = e.target.value;
+
+        setText(value);
+        debounced(value)
+    }
 
     const [options, setOptions] = useState( [
         {
@@ -24,6 +41,12 @@ const Item =  ({onClick, Icon, TextIcon, filename, handleOnChangeFilename, ids =
             title: 'Delete',
             action: function () {
                 dispatch(deleteFile({ids: ids}))
+            },
+        },
+         {
+            title: 'Duplicate',
+            action: function () {
+                dispatch(duplicateFile({ids: ids}))
             },
         },
     ]);
@@ -67,7 +90,7 @@ const Item =  ({onClick, Icon, TextIcon, filename, handleOnChangeFilename, ids =
         {TextIcon && (TextIcon)}
 
         {!isEditable && (
-            <p className="p-1">{filename}</p>
+            <p className="p-1">{text}</p>
         )}    
 
         {isEditable && (
@@ -79,13 +102,11 @@ const Item =  ({onClick, Icon, TextIcon, filename, handleOnChangeFilename, ids =
                     onBlur={()=> setEditable(false)} 
                     ref={inputRef} 
                     className='w-full p-1 border-gray-300 border-b outline-none' 
-                    value={filename} 
-                    onChange={handleOnChangeFilename}
+                    value={text} 
+                    onChange={handleChangeName}
                 />
             </form>
         )}     
-
-     
     </div>
 }
 

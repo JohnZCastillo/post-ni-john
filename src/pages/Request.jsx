@@ -15,8 +15,8 @@ const RequestItem = ({type, ids})=> {
         name: 'Test',
     })
 
-    const handleOnChangeFileName = (e) =>{
-        dispatch(updateFilename({ids: ids, filename: e.target.value}))
+    const handleOnChangeFileName = (value) =>{
+        dispatch(updateFilename({ids: ids, filename: value}))
     }
 
     useEffect(()=>{

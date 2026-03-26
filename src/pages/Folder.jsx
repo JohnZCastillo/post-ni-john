@@ -20,8 +20,8 @@ const ItemWrapper = ({children, ids}) => {
         setIsContentShowing(prev => !prev)
     }
     
-    const handleOnChangeFileName = (e) =>{
-        dispatch(updateFileDetails({ids: ids, name: e.target.value}))
+    const handleOnChangeFileName = (value) =>{
+        dispatch(updateFileDetails({ids: ids, name: value}))
     }
 
     const handleOnAddFolder = (e) =>{

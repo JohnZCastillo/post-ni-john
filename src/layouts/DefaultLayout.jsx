@@ -1,16 +1,26 @@
-import { useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Outlet } from "react-router";
 import { md5 } from 'js-md5';
 import { updateContent } from "../redux-slice/slice";
 import * as jsondiffpatch from 'jsondiffpatch';
+import { socket } from "../socket";
+import { v4 } from "uuid";
 
 export default function DefaultLayout(){
-    
+
+    const initalState = useRef({
+        clientId: v4(),
+        firstRender: true,
+        shouldReflect: false
+    });
+
     const dispatch = useDispatch();
 
-    const appState = useSelector((state) => state.appState)
-    
+    const appState = useSelector((state) => state.appState);
+
+    const socketRef = useRef();
+
     const syncUpstream = async (workspace)=>{
 
         const response =  await fetch(`${import.meta.env.VITE_WEB_AGENT}/sync/${workspace}`, {
@@ -66,10 +76,92 @@ export default function DefaultLayout(){
         }
     }
 
+    const syncDown = async (data)=>{
+
+        const diffpatcher = jsondiffpatch.create({
+            objectHash: function (obj) {
+                return obj.id
+            },
+        });
+
+        const localCopy =  diffpatcher.clone(appState.content);
+
+        const delta = diffpatcher.diff(localCopy, data);
+
+        if(delta){
+            diffpatcher.patch(localCopy, delta);
+        }
+        
+        dispatch(updateContent({content:  localCopy}))
+    }
+
     useEffect(()=>{
-        syncDownstream('Cow');
+
+        const ws = new WebSocket('ws://localhost:3000/ws/Cow')
+
+        socketRef.current = ws;
+
+        ws.onmessage = (event) => {
+
+            const {clientId: targetId, content = [], initial = false} = JSON.parse(event.data);
+
+            if(targetId == initalState.current.clientId){
+                return;
+            }
+
+            initalState.current.shouldReflect = false;
+
+            syncDown(content)
+        }
+
+        return () => {
+            if(ws.readyState){
+                ws.close();
+            }
+        }
+
     },[])
-    
+
+    useEffect(()=>{
+
+        const ignoreActions = [
+            'removeSelection',
+            'setSelection',
+            'setSelection'
+        ];
+
+        if(initalState.current.firstRender){
+            
+            initalState.current = {
+                ...initalState.current, 
+                firstRender: false
+            }
+
+            return;
+        }
+
+        const ws = socketRef.current;
+
+        if(!ws?.readyState){
+            return;
+        }
+
+        if(ignoreActions.includes( appState.actionType)){
+            return;
+        }
+
+        if(!initalState.current.shouldReflect){
+            initalState.current.shouldReflect = true;
+            return;
+        }
+
+        ws.send(JSON.stringify({
+            clientId: initalState.current.clientId,
+            content: appState.content
+        }))
+
+    },[appState])
+
     return <>
         <Outlet context={{syncUpstream,syncDownstream}}/>
     </>

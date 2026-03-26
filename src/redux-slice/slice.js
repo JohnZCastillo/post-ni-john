@@ -1,7 +1,7 @@
 import { createSlice, current } from '@reduxjs/toolkit'
 import { v4 as uuidv4, v4 } from 'uuid';
 
-const initialState = JSON.parse(localStorage.getItem('redux-store'))?.appState ?? {content: [], activeSelection: null};
+const initialState = JSON.parse(localStorage.getItem('redux-store'))?.appState;
 
 export const counterSlice = createSlice({
   name: 'counter',
@@ -9,7 +9,8 @@ export const counterSlice = createSlice({
         content: [],
         activeSelection: null,
         selections: [],
-        ...initialState
+        actionType: '',
+        // ...initialState
     },    
   reducers: {
     updateFilename: (state, action) => {
@@ -33,6 +34,7 @@ export const counterSlice = createSlice({
         }
 
         target.name = filename;
+        state.actionType = 'updateFilename';
     },
     setSelection: (state, action) => {
 
@@ -58,6 +60,7 @@ export const counterSlice = createSlice({
 
 
         state.activeSelection = target;
+        state.actionType = 'setSelection';
 
         if(state?.selections == null){
             state.selections = [target];
@@ -69,7 +72,6 @@ export const counterSlice = createSlice({
                 state.selections.push(target);
             }
         }
-
     },
     updateMethod: (state, action) => {
 
@@ -99,6 +101,7 @@ export const counterSlice = createSlice({
         
         target.method = method;
         state.activeSelection = target
+        state.actionType = 'updateMethod';
     },
     updateUrl: (state, action) => {
 
@@ -129,6 +132,7 @@ export const counterSlice = createSlice({
         target.url = url;
         target.caller = caller;
         state.activeSelection = target
+        state.actionType = 'updateUrl';
     },
     addFolder: (state, action) => {
 
@@ -155,6 +159,7 @@ export const counterSlice = createSlice({
         }
         
         target.isOpen = true;
+        state.actionType = 'addFolder';
 
         target?.contents?.push({
             id: v4(),
@@ -188,6 +193,7 @@ export const counterSlice = createSlice({
         }
         
         target.isOpen = true;
+        state.actionType = 'addFile';
 
         target?.contents?.push({
             id: v4(),
@@ -201,6 +207,7 @@ export const counterSlice = createSlice({
     addRootFile: (state, action) => {
 
         const { filename } = action.payload;
+        state.actionType = 'addRootFile';
       
         state?.content?.push({
             id: v4(),
@@ -215,6 +222,8 @@ export const counterSlice = createSlice({
 
         const { filename } = action.payload;
         
+        state.actionType = 'addRootFolder';
+
         state.content.push({
             id: v4(),
             type: 'folder',
@@ -246,6 +255,8 @@ export const counterSlice = createSlice({
             target[key] = action.payload[key];
         })
 
+        state.actionType = 'updateFileDetails';
+
     },
     deleteFile: (state, action) => {
 
@@ -268,12 +279,14 @@ export const counterSlice = createSlice({
             if(index == 0 && ids.length == 1){
                 counterSlice.caseReducers.removeSelection(state, { type: 'counter/removeSelection', payload: {id: key} });
                 state.content = state.content?.filter(content => content?.id != key) ?? [];
+                state.actionType = 'deleteFile';
                 return;
             }
 
             if(index == (ids.length - 2)){
                 counterSlice.caseReducers.removeSelection(state, { type: 'counter/removeSelection', payload: { id:  ids[ids.length - 1] } });
                 target.contents = target?.contents?.filter(contents => contents.id != ids[ids.length - 1]) ?? [];
+                state.actionType = 'deleteFile';
                 return;
             }
 
@@ -290,19 +303,72 @@ export const counterSlice = createSlice({
             return;
         }
 
+        state.actionType = 'removeSelection';
         state.selections = state.selections.filter(selection => selection.id != id);
     },
     updateContent: (state, action) => {
 
         const {isUpstream = false} = action.payload;
 
+        state.actionType = 'updateContent';
         state.content = action.payload.content;
         
         if(!isUpstream){
             state.selected = null;
             state.selections = []
         }
-    }   
+    },
+    duplicateFile: (state, action) => {
+
+        const { ids } = action.payload;
+
+        let target = state.content;
+        let parent = state.content;
+
+        if(ids == null){
+            return;
+        }
+
+        if(ids.length == 1){
+
+            target = state.content.find(x => x.id == ids[0]);
+
+            const id = v4();
+
+            state.content.push({
+                ...target,
+                id: id,
+                ids: [id] 
+            })
+
+            return;
+        }
+
+        for (let index = 0; index < ids.length; index++) {
+            const key = ids[index];
+
+            target = target.find(x => x.id == key);
+
+            if(target == null){
+                return;
+            }
+
+            if(index == ids.length - 2){
+                parent = target;
+            }
+
+            if(index != (ids.length - 1)){
+                target = target.contents
+            }
+        }
+
+        parent.contents.push({
+            ...target,
+            name: target.name + ' copy',
+            id: v4(),
+            ids:  target?.ids?.pop() ?? []
+        })
+    },
   },
 })
 
@@ -319,6 +385,7 @@ export const {
         addFile, 
         addRootFile,
         updateContent,
+        duplicateFile
     } = counterSlice.actions
 
 export default counterSlice.reducer
