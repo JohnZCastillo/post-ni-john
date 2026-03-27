@@ -8,6 +8,7 @@ import axios from "axios";
 import Editor from '@monaco-editor/react';
 import useKeyValue from "../hooks/useKeyValue";
 import { Allotment } from "allotment";
+import { useDebouncedCallback } from "use-debounce";
 
 export default function Workspace({ids}){
 
@@ -15,6 +16,16 @@ export default function Workspace({ids}){
     const dispatch = useDispatch();
 
     const request = useFilename(ids);
+
+    const [search, setSearch] = useState(request?.url ?? '');
+
+    const debounced = useDebouncedCallback((value) =>{
+          dispatch(updateFileDetails({url: value, ids}))
+    }, 1000);
+
+    useEffect(()=>{
+        setSearch(request?.url);
+    },[request?.url]);
 
     const {
         contents: headers, 
@@ -70,8 +81,13 @@ export default function Workspace({ids}){
     }
     
     const handleOnChangeUrl = (e) => {
-        trafficController.current = 'search'
-        dispatch(updateFileDetails({url: e.target.value.trim(), ids}))
+        
+        trafficController.current = 'search';
+
+        const search = e.target.value.trim();
+
+        setSearch(search);
+        debounced(search);
     }
 
     const fetch = ()=> {
@@ -399,7 +415,7 @@ export default function Workspace({ids}){
                             </span>
                             <input  
                                 onChange={handleOnChangeUrl} 
-                                value={request?.url} 
+                                value={search} 
                                 className='w-full outline-none'
                             />
                         </div>
