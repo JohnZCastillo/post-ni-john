@@ -4,10 +4,9 @@ import { Outlet } from "react-router";
 import { md5 } from 'js-md5';
 import { updateContent } from "../redux-slice/slice";
 import * as jsondiffpatch from 'jsondiffpatch';
-import { socket } from "../socket";
 import { v4 } from "uuid";
 
-export default function DefaultLayout(){
+export default function DefaultLayout() {
 
     const initalState = useRef({
         clientId: v4(),
@@ -21,15 +20,15 @@ export default function DefaultLayout(){
 
     const socketRef = useRef();
 
-    const syncUpstream = async (workspace)=>{
+    const syncUpstream = async (workspace) => {
 
-        const response =  await fetch(`${import.meta.env.VITE_WEB_AGENT}/sync/${workspace}`, {
+        const response = await fetch(`${import.meta.env.VITE_WEB_AGENT}/sync/${workspace}`, {
             method: 'POST',
             body: JSON.stringify({
                 content: appState.content
             })
         })
-        .then( res => res.json());
+            .then(res => res.json());
 
         const localCopy = [...response.content];
 
@@ -41,23 +40,23 @@ export default function DefaultLayout(){
 
         const delta = diffpatcher.diff(localCopy, appState.content);
 
-        if(delta){
+        if (delta) {
             jsondiffpatch.patch(localCopy, delta);
         }
 
-        dispatch(updateContent({content:  localCopy ?? [], isUpstream: true}))
+        dispatch(updateContent({ content: localCopy ?? [], isUpstream: true }))
     }
 
-    const syncDownstream = async (workspace)=>{
+    const syncDownstream = async (workspace) => {
 
-        const result =  await fetch(`${import.meta.env.VITE_WEB_AGENT}/sync/${workspace}`)
-            .then( response => response.json());
+        const result = await fetch(`${import.meta.env.VITE_WEB_AGENT}/sync/${workspace}`)
+            .then(response => response.json());
 
         const localHash = md5(JSON.stringify(appState.content ?? []));
-            
-        if(result.hash != localHash || 1 == 1){
-           
-            const localCopy =  jsondiffpatch.clone(appState.content);
+
+        if (result.hash != localHash || 1 == 1) {
+
+            const localCopy = jsondiffpatch.clone(appState.content);
 
             const diffpatcher = jsondiffpatch.create({
                 objectHash: function (obj) {
@@ -67,16 +66,16 @@ export default function DefaultLayout(){
 
             const delta = diffpatcher.diff(localCopy, result.data);
 
-            if(delta){
+            if (delta) {
                 console.log(delta);
                 jsondiffpatch.patch(localCopy, delta);
             }
 
-            dispatch(updateContent({content:  localCopy}))
+            dispatch(updateContent({ content: localCopy }))
         }
     }
 
-    const syncDown = async (data)=>{
+    const syncDown = async (data) => {
 
         const diffpatcher = jsondiffpatch.create({
             objectHash: function (obj) {
@@ -84,18 +83,18 @@ export default function DefaultLayout(){
             },
         });
 
-        const localCopy =  diffpatcher.clone(appState.content);
+        const localCopy = diffpatcher.clone(appState.content);
 
         const delta = diffpatcher.diff(localCopy, data);
 
-        if(delta){
+        if (delta) {
             diffpatcher.patch(localCopy, delta);
         }
-        
-        dispatch(updateContent({content:  localCopy}))
+
+        dispatch(updateContent({ content: localCopy }))
     }
 
-    useEffect(()=>{
+    useEffect(() => {
 
         const ws = new WebSocket('ws://localhost:3000/ws/Cow')
 
@@ -103,9 +102,9 @@ export default function DefaultLayout(){
 
         ws.onmessage = (event) => {
 
-            const {clientId: targetId, content = [], initial = false} = JSON.parse(event.data);
+            const { clientId: targetId, content = [], initial = false } = JSON.parse(event.data);
 
-            if(targetId == initalState.current.clientId){
+            if (targetId == initalState.current.clientId) {
                 return;
             }
 
@@ -115,14 +114,14 @@ export default function DefaultLayout(){
         }
 
         return () => {
-            if(ws.readyState){
+            if (ws.readyState) {
                 ws.close();
             }
         }
 
-    },[])
+    }, [])
 
-    useEffect(()=>{
+    useEffect(() => {
 
         const ignoreActions = [
             'removeSelection',
@@ -130,10 +129,10 @@ export default function DefaultLayout(){
             'setSelection'
         ];
 
-        if(initalState.current.firstRender){
-            
+        if (initalState.current.firstRender) {
+
             initalState.current = {
-                ...initalState.current, 
+                ...initalState.current,
                 firstRender: false
             }
 
@@ -142,15 +141,15 @@ export default function DefaultLayout(){
 
         const ws = socketRef.current;
 
-        if(!ws?.readyState){
+        if (!ws?.readyState) {
             return;
         }
 
-        if(ignoreActions.includes( appState.actionType)){
+        if (ignoreActions.includes(appState.actionType)) {
             return;
         }
 
-        if(!initalState.current.shouldReflect){
+        if (!initalState.current.shouldReflect) {
             initalState.current.shouldReflect = true;
             return;
         }
@@ -160,9 +159,9 @@ export default function DefaultLayout(){
             content: appState.content
         }))
 
-    },[appState])
+    }, [appState])
 
     return <>
-        <Outlet context={{syncUpstream,syncDownstream}}/>
+        <Outlet context={{ syncUpstream, syncDownstream }} />
     </>
 }
