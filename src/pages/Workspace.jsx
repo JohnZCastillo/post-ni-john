@@ -78,9 +78,13 @@ export default function Workspace({ids}){
 
         let option = {};
 
-        const {method, url: targetUrl, bearerToken, headers: requestHeaders, body} =  request;
+        let {method, url: targetUrl, bearerToken, headers: requestHeaders, body} =  request;
 
         let url = new URL('agent',import.meta.env.VITE_WEB_AGENT);
+
+        if(!targetUrl.startsWith('http://') && !targetUrl.startsWith('https://') ){
+            targetUrl = 'http://' + targetUrl; 
+        }
 
         const loopBackUrl = new URL(targetUrl);
 
@@ -123,13 +127,8 @@ export default function Workspace({ids}){
         switch(method){
             case 'get':
                  axios.get(url, options).then(res => {
-
-                    console.log(res);
-
                     setFetchResult(res)
                 }).catch(err => {
-
-                    console.log(err.response);
 
                     if (err.response) {
                         setFetchResult(err.response, true)
@@ -138,7 +137,6 @@ export default function Workspace({ids}){
                     } else {
                         setFetchResult({"message": "Something went wrong"}, true)
                     }
-
 
                 }).finally(()=>{
                     endFetch()
