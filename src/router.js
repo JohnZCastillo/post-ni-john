@@ -3,6 +3,7 @@ import DefaultLayout from "./layouts/DefaultLayout";
 import Homepage from "./pages/Homepage";
 import AuthLayout from "./layouts/AuthLayout";
 import Login from "./pages/Login";
+import WorkspaceSelector from "./pages/WorkspaceSelector";
 
 const router = createBrowserRouter([
   {
@@ -14,8 +15,16 @@ const router = createBrowserRouter([
         Component: Homepage
       },
       {
+        path: '/:workspace',
+        Component: Homepage
+      },
+      {
         path: 'login',
         Component: Login
+      },
+      {
+        path: 'workspaces',
+        Component: WorkspaceSelector
       }
     ]
   },

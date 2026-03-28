@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Outlet } from "react-router";
+import { Outlet, useParams, useNavigate, useLocation } from "react-router";
 import { md5 } from 'js-md5';
 import { updateContent } from "../redux-slice/slice";
 import * as jsondiffpatch from 'jsondiffpatch';
@@ -15,8 +15,16 @@ export default function DefaultLayout() {
     });
 
     const dispatch = useDispatch();
-
+    const navigate = useNavigate();
+    const location = useLocation();
     const appState = useSelector((state) => state.appState);
+
+    useEffect(() => {
+        const isAuthRoute = ['/login', '/workspaces'].includes(location.pathname);
+        if (!appState.workspaceId && !isAuthRoute) {
+            navigate('/workspaces');
+        }
+    }, [appState.workspaceId, location.pathname]);
 
     const socketRef = useRef();
 
@@ -96,7 +104,15 @@ export default function DefaultLayout() {
 
     useEffect(() => {
 
-        const ws = new WebSocket('ws://localhost:3000/ws/Cow')
+        if (appState.workspaceId == null) {
+            return
+        }
+
+        const token = localStorage.getItem(`ws:${appState.workspaceId}`);
+
+        const wsUrl = `ws://localhost:3000/ws/${appState.workspaceId}${token ? `?token=${token}` : ''}`;
+
+        const ws = new WebSocket(wsUrl)
 
         socketRef.current = ws;
 
@@ -119,7 +135,7 @@ export default function DefaultLayout() {
             }
         }
 
-    }, [])
+    }, [appState.workspaceId])
 
     useEffect(() => {
 
@@ -145,9 +161,11 @@ export default function DefaultLayout() {
             return;
         }
 
+
         if (ignoreActions.includes(appState.actionType)) {
             return;
         }
+
 
         if (!initalState.current.shouldReflect) {
             initalState.current.shouldReflect = true;

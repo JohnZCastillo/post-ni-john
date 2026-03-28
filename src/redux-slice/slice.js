@@ -10,7 +10,6 @@ const updateId = (content) => {
 
         target.id = v4();
         target.ids = [];
-        target.name = 'tanginamo';
 
         target?.contents?.forEach(child => {
             update(child);
@@ -27,6 +26,8 @@ export const counterSlice = createSlice({
         activeSelection: null,
         selections: [],
         actionType: '',
+        workspaceId: null,
+        workspaceName: null,
     },
     reducers: {
         updateFilename: (state, action) => {
@@ -350,22 +351,18 @@ export const counterSlice = createSlice({
                 return;
             }
 
-            // if (ids.length == 1) {
+            if (ids.length == 1) {
 
-            target = state.content.find(x => x.id == ids[0]);
+                target = state.content.find(x => x.id == ids[0]);
 
-            // console.log('fucking: ', current(target));
+                let copy = JSON.parse(JSON.stringify(target));
 
-            // console.log('original: ', current(target));
+                updateId(copy);
 
-            let copy = JSON.parse(JSON.stringify(target));
+                state.content.push(copy);
 
-            updateId(copy);
-
-            state.content.push(copy);
-
-            return;
-            // }
+                return;
+            }
 
             for (let index = 0; index < ids.length; index++) {
                 const key = ids[index];
@@ -385,9 +382,11 @@ export const counterSlice = createSlice({
                 }
             }
 
-            // parent.contents.push({
-            //     ids: [...tar]
-            // })
+            let copy = JSON.parse(JSON.stringify(target));
+
+            updateId(copy);
+
+            parent.contents.push(copy)
 
         },
         reCopy: (state, action) => {
@@ -440,6 +439,15 @@ export const counterSlice = createSlice({
             state.actionType = 'closeAllTabsExceptActive';
             state.selections = state.selections.filter(selection => selection.id == id);
         },
+        setWorkspace: (state, action) => {
+            const { workspaceId, workspaceName } = action.payload;
+            state.workspaceId = workspaceId;
+            state.workspaceName = workspaceName;
+            state.content = [];
+            state.activeSelection = null;
+            state.selections = [];
+            state.actionType = 'setWorkspace';
+        },
     },
 })
 
@@ -459,7 +467,8 @@ export const {
     duplicateFile,
     reCopy,
     closeAllTabs,
-    closeAllTabsExceptActive
+    closeAllTabsExceptActive,
+    setWorkspace
 } = counterSlice.actions
 
 export default counterSlice.reducer

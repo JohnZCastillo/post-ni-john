@@ -6,7 +6,7 @@ import { RefreshCw } from '@boxicons/react';
 import Workspace from './Workspace';
 import Tab from './Tab';
 import { Allotment } from 'allotment';
-import { useOutletContext } from 'react-router';
+import { useOutletContext, useNavigate } from 'react-router';
 import LoadingBtn from '../components/LoadingBtn';
 import DraggableItem from '../components/DraggableItem';
 import { useRef } from 'react';
@@ -15,6 +15,7 @@ export default function Homepage() {
 
     const appState = useSelector((state) => state.appState);
     const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const draggableBox = useRef();
 
@@ -38,8 +39,6 @@ export default function Homepage() {
         )
     }
 
-    // console.log(appState.activeSelection);
-
     return (
         <div style={{ height: '100vh', background: 'var(--pm-bg)', display: 'flex', flexDirection: 'column' }}>
             {/* Top navbar */}
@@ -56,6 +55,31 @@ export default function Homepage() {
                 <span style={{ color: 'var(--pm-accent)', fontWeight: 700, fontSize: '15px', letterSpacing: '0.5px' }}>
                     API Client
                 </span>
+                <button
+                    type="button"
+                    onClick={() => navigate('/workspaces')}
+                    title="Switch workspace"
+                    style={{
+                        marginLeft: 'auto',
+                        background: 'transparent',
+                        border: '1px solid var(--pm-border)',
+                        borderRadius: '5px',
+                        color: 'var(--pm-text-muted)',
+                        cursor: 'pointer',
+                        padding: '3px 10px',
+                        fontSize: '12px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '6px',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.color = 'var(--pm-text)'; e.currentTarget.style.borderColor = 'var(--pm-accent)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.color = 'var(--pm-text-muted)'; e.currentTarget.style.borderColor = 'var(--pm-border)'; }}
+                >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                    </svg>
+                    {appState.workspaceName ?? 'Workspace'}
+                </button>
             </div>
 
             <div style={{ flex: 1, overflow: 'hidden' }}>
